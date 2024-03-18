@@ -1,0 +1,95 @@
+var Servicio = Stapes.subclass({
+
+    constructor : function() {
+		
+	},
+	
+	post : function(asp, metodo, param, callback, callbackError){
+		try{
+			var self = this;
+			var xmlhttp = new XMLHttpRequest();
+			var obtenerRespuesta = function(obj){
+				if (xmlhttp.readyState == XMLHttpRequest.DONE){
+					if (xmlhttp.status == 200){
+						if(callback){
+							callback(self.formatearRespuesta(xmlhttp.responseText));
+						}
+					}else if(xmlhttp.status == 500){
+						if(callbackError){
+							callbackError();
+						}
+					}
+				}
+			}
+			
+			if (asp.indexOf("?") !== -1) {
+				asp = asp + "&ver=" + version;
+			}
+			else {
+				asp = asp + "?ver=" + version;
+			}
+			
+			xmlhttp = (XMLHttpRequest?new XMLHttpRequest():new ActiveXObject("Microsoft.XMLHTTP")); 
+			xmlhttp.open("POST", asp, true);
+			xmlhttp.onreadystatechange = obtenerRespuesta;
+			xmlhttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;");
+			xmlhttp.send('metodo='+metodo+'&param='+param);
+		}
+		catch(e){
+			callbackError();
+		}
+	},
+	
+	postSincronico : function(asp, metodo, param, callback){
+		var self = this;
+		var respuesta = '';
+		
+		var obtenerRespuesta = function(obj){
+			if (xmlhttpsinc.readyState == XMLHttpRequest.DONE){
+				if (xmlhttpsinc.status == 200){
+					respuesta = xmlhttpsinc.responseText;
+					respuesta = self.formatearRespuesta(respuesta);
+				}else if(xmlhttpsinc.status == 500){
+					
+				}else if(xmlhttpsinc.status == 500){
+					
+				}
+			}
+		}
+		
+		if (asp.indexOf("?") !== -1) {
+			asp = asp + "&ver=" + version;
+		}
+		else {
+			asp = asp + "?ver=" + version;
+		}
+
+		xmlhttpsinc = (XMLHttpRequest?new XMLHttpRequest():new ActiveXObject("Microsoft.XMLHTTP")); 
+		xmlhttpsinc.open("POST", asp, false);
+		xmlhttpsinc.onreadystatechange = obtenerRespuesta;
+		xmlhttpsinc.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+		xmlhttpsinc.send('metodo='+metodo+'&param='+param);
+		
+		return respuesta;
+	},
+	formatearRespuesta: function(respuesta){
+		return respuesta.
+			replace(/\'/g, "\"").
+			replace(/&aacute;/g, "á").
+			replace(/&eacute;/g, "é").
+			replace(/&iacute;/g, "í").
+			replace(/&oacute;/g, "ó").
+			replace(/&uacute;/g, "ú").
+			replace(/&Aacute;/g, "Á").
+			replace(/&Eacute;/g, "É").
+			replace(/&Iacute;/g, "Í").
+			replace(/&Oacute;/g, "Ó").
+			replace(/&Uacute;/g, "Ú").
+			replace(/&ntilde;/g, "ñ").
+			replace(/&Ntilde;/g, "Ñ");
+	}
+	
+	
+	
+});
+	

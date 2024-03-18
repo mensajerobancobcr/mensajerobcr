@@ -1,0 +1,248 @@
+var PrincipalControlador = Stapes.subclass({
+
+
+    constructor : function() {
+		 
+    },
+	
+	init : function(owner, etiquetas,  callback) {
+        this.cargarEtiquetas(etiquetas);
+        this.cicloVida(owner, callback);
+        setTimeout(function() {
+            
+            if(!$(".ultimoElementoLabel").length){
+                $(".ultimoElemento")
+                .append("<div style='position: absolute left -50px;' ><label class='ultimoElementoLabel' tabindex='1000'></label></div>");
+               
+                $(".ultimoElementoLabel").keyup( function(e){
+					if (e.which === 9) {
+                        var menu = window.parent.$("#toggle");
+                        menu.attr('tabindex', '1001');
+                        menu.focus();
+                    }                    
+                });
+            }
+            
+            var locale = window.navigator.userLanguage || window.navigator.language;
+			if(locale.indexOf("en") > -1){
+                var h5 = $("#pieBcr").find('h5');
+                if(h5){
+                    var fecha = $(h5).attr('aria-label');
+                    if($(h5).attr('fechaSinFormato')){
+                        fecha = $(h5).attr('fechaSinFormato');
+                    }
+                    if(fecha){
+                        fechaSinFormato = fecha;		
+                        fecha = moment(fecha, "DD/MM/YYYY HH:mm:ss");
+                        fecha = fecha.format("L HH:mm:ss");
+                        $(h5).attr('aria-label', fecha);
+                        $(h5).attr('fechaSinFormato', fechaSinFormato);
+                    }
+                   
+                }
+				
+            }
+
+          
+            
+        }, 300);
+    },
+	
+	
+    
+    cargarEtiquetas : function(etiquetas){
+        var self = this;
+        var newEtiquetas = {}
+        if(etiquetas){
+            $.each(etiquetas, function(i, etiqueta){
+                etiqueta = self.limpiarEtiqueta(etiqueta);
+                newEtiquetas[i] = etiqueta;
+            });
+            jQuery.i18n.es.strings = newEtiquetas;
+        }
+    },
+    
+    limpiarEtiqueta: function(etiqueta){
+		return etiqueta.
+			replace(/&aacute;/g, "á").
+			replace(/&eacute;/g, "é").
+			replace(/&iacute;/g, "í").
+			replace(/&oacute;/g, "ó").
+			replace(/&uacute;/g, "ú").
+			replace(/&Aacute;/g, "Á").
+			replace(/&Eacute;/g, "É").
+			replace(/&Iacute;/g, "Í").
+			replace(/&Oacute;/g, "Ó").
+			replace(/&Uacute;/g, "Ú").
+			replace(/&ntilde;/g, "ñ").
+			replace(/&Ntilde;/g, "Ñ");
+	},
+
+  /**
+   * Utilizado para invocar los metodos de inicializacion de un controller
+   * */
+    cicloVida: function(owner, callback){
+        var self = this;
+        //self.emit('onInit');
+        if (typeof owner.cargarVariables == 'function') {
+            owner.cargarVariables();
+        }
+        if (typeof owner.cargarVista == 'function') {
+            owner.cargarVista();
+        }
+        if (typeof owner.cargarValidadores == 'function') {
+            owner.cargarValidadores();
+        }
+        if (typeof owner.cargarEventos == 'function') {
+            owner.cargarEventos();
+        }
+        if(callback)
+            callback.call(owner);
+    },
+
+    esperar: function(callback, milis){
+      if(!milis) milis = 500;
+      setTimeout(callback, milis);
+    },
+
+    
+
+    obtenerInfoForm : function (form) {
+        var info = {};
+        if(form){
+            var countInputDate = 1;
+            var inputs = $(form).find(":input");
+            $.each(inputs, function (i, input) {
+                var id = $(input).attr("id");
+                var value = $(input).val();
+                var date = '01/01/2000';
+
+                if($(input).is("select")){
+                    value = $(input).find("option:selected").val();
+                }else if($(input).is("radio")){
+                    value = $(input).find("checked").val();
+                }else if($(input).attr("money")){
+                    value = $(input).val().replace(/,/g, "");
+                }else if($(input).hasClass("monto")){
+                    value = $(input).val().replace(/\./g, "").replace(/,/g, ".");
+                }else if($(input).hasClass("dateInput")){
+                    date = $(input).val();
+                    if(date) {
+                        if ($(input).hasClass("month")) {
+                            var dateFrom = moment(moment(date, ["MMMM, YYYY", "YYYY-MM"]).startOf('month')).format("YYYY-MM-DD");
+                            var dateTo = moment(moment(date, ["MMMM, YYYY", "YYYY-MM"]).endOf('month')).format("YYYY-MM-DD");
+                            info['dateFrom'+countInputDate] = dateFrom;
+                            info['dateTo'+countInputDate] = dateTo;
+                            countInputDate++;
+                            id = null;
+                        } else {
+                            value = moment(moment(date, ["DD/MM/YYYY", "YYYY-MM-DD"])).format("YYYY-MM-DD");
+                        }
+                    }
+                }else if($(input).hasClass("dateFrom")){
+                    id = 'startdate';
+                    date = $(input).val();
+                    value =  moment(moment(date, ["DD/MM/YYYY", "YYYY-MM-DD"])).format("YYYY-MM-DD");
+                }else if($(input).hasClass("dateTo")){
+                    id = 'enddate';
+                    date = $(input).val();
+                    value =  moment(moment(date, ["DD/MM/YYYY", "YYYY-MM-DD"])).format("YYYY-MM-DD");
+                }
+
+                if(id) {
+                    info[id] = value;
+                }
+            });
+        }
+        return info;
+    },
+
+    cargarForm : function (form, object) {
+        if (form) {
+            var inputs = $(form).find(":input");
+            $.each(inputs, function (i, input) {
+                var id = $(input).attr("id");
+                var value = object[id];
+                if($(this).is(':radio')){
+                    $("input[name='"+this.name+"']").filter('[value='+value+']').prop("checked",true).trigger("change");
+                }else if($(this).is(':checkbox')){
+                    value = value == 'S' ? true : value == 'N' ? false : value;
+                    $("input[name='"+this.name+"']").prop("checked",value).trigger("change");
+                }else {
+                    $(input).val(value);
+                }
+            });
+        }
+    },
+
+   
+
+    cargarCombo : function (combo, list, code, description, callback) {
+        var self = this;
+        if(list && list.length > 0){
+            $.each(list, function (i, element) {
+                var option = $("<option></option>").val(element[code]).text(element[description]);
+                if(callback){
+                    var response = {
+                        option : option,
+                        data : element
+                    };
+                    callback.call(self, response);
+                }
+                $(combo).append(option);
+            });
+        }
+    },
+
+    
+
+    verificarCambios : function (newObject, oldObject) {
+        var result = false;
+        $.each(newObject, function (key, value) {
+            if(oldObject[key] !== value){
+                oldObject[key] = value;
+                result = true;
+            }
+        });
+        return result;
+    },
+
+    formatearMonto : function(nStr){
+		nStr += '';
+		x = nStr.split('.');
+		x1 = x[0];
+		x2 = x.length > 1 ? ',' + x[1] : '';
+		var rgx = /(\d+)(\d{3})/;
+		while (rgx.test(x1)) {
+			x1 = x1.replace(rgx, '$1' + '.' + '$2');
+		}
+        
+        var monto =  x1 + x2;
+
+        if(monto.indexOf(',') < 0){
+            monto = monto + ',00';
+        }
+        return monto;
+    },
+    
+    formatearCuentaIBAN: function(cuentaIBAN){
+        var iniCuenta =  $("<span></span>")
+        .text(cuentaIBAN.substring(0, 10));
+
+        var negrita = $("<b></b>")
+        .text(cuentaIBAN.substring(10, 21));
+
+        var finCuenta =  $("<span></span>")
+        .text(cuentaIBAN.substring(21, 22));
+
+        var cuentaResaltada = $("<span></span>");
+        cuentaResaltada.append(iniCuenta);
+        cuentaResaltada.append(negrita);
+        cuentaResaltada.append(finCuenta);
+        return  cuentaResaltada.html();
+
+    }
+
+    
+    
+});

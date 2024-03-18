@@ -1,0 +1,337 @@
+var IndexControlador = PrincipalControlador.subclass({
+    constructor: function(b, c, d) {
+        this.el = b;
+        this.etiquetas = d;
+        this.init(this, c)
+    },
+    cargarVariables: function() {
+        this.servicio = new Servicio;
+        this.tabIndexMenuLateral = 11
+    },
+    cargarVista: function() {
+        if (!this.menuLateral) {
+            var b = this.servicio.postSincronico("../plantilla/index.asp", "ObtenerMenu", "");
+            b && (b = b.replace(/@/g, "'"),
+            b = $.parseJSON(b),
+            this.procesarMenu(b),
+            this.crearMenuSuperiorMovil(),
+            this.crearMenuLateral(this.menuLateral));
+            $("#menuSegLink").parent().dropdown()
+        }
+        b = this.formatearFecha(this.etiquetas.ultimo_ingreso);
+        $("#ultimo_ingreso_label").text(b);
+        $("#toggle").focus()
+    },
+    cargarValidadores: function() {},
+    cargarEventos: function() {
+        var b = this
+          , c = navigator.userAgent
+          , d = -1 < c.indexOf("MSIE ") || -1 < c.indexOf("Trident/");
+        $("#toggle").on("click", function() {
+            $("#sideBarLateral").sidebar("toggle");
+            setTimeout(function() {
+                $("#imagen-perfil").focus()
+            }, 250)
+        }).keydown(function(a) {
+            13 != a.which && 32 != a.which || $(this).click()
+        });
+        $(".ui.accordion").accordion({
+            exclusive: !1
+        });
+        $("#mobile_item").on("click", function() {
+            $("#menuSuperiorMovil").sidebar("toggle");
+            setTimeout(function() {
+                $("#menuSuperiorMovil").find("a:first").focus()
+            }, 200)
+        });
+        $("#itmContactenos").off("click.itmContactenos").on("click.itmContactenos", this.cargarModalContactenos);
+        $("#btnAceptarContacto").off("click.btnAceptarContacto").on("click.btnAceptarContacto", this.cerrarModalContactenos);
+        $("#btnModal").off("click.btnModal").on("click.btnModal", this.cerrarModalGeneral);
+        $.post("/ib_bcr/Foto.asp", function(a) {
+            200 == a.codigoRespuesta && "null" != a.imagen.toLowerCase() && "" != a.imagen ? $("#imagen-perfil").attr("src", a.imagen) : $("#imagen-perfil").attr("src", "/imagenes/profile_image.svg");
+            $("#imagen-loader").hide()
+        }).fail(function(a) {
+            $("#imagen-perfil").attr("src", "/imagenes/profile_image.svg");
+            $("#imagen-loader").hide()
+        });
+        $("#imagen-perfil").click(function() {
+            var a = $("<label></label>").text(b.etiquetas.msjFotoTitulo)
+              , e = $("<label></label>").text(b.etiquetas.msjFotoDesc)
+              , g = $("#tituloModal");
+            g.children().remove();
+            g.append(a);
+            a = $("#contenidoModal");
+            a.children().remove();
+            a.append(e);
+            b.abrirModalGeneral()
+        }).keyup(function(a) {
+            13 == a.which || 32 == a.which ? $(this).trigger("click") : 27 == a.which && ($(".pusher").click(),
+            $("#linkLogo").focus())
+        });
+        $("#inputBuscar").keyup(function(a) {
+            9 != a.which && (a = this.value,
+            b.actualizarIconoBuscar(a),
+            b.buscarMenu(a))
+        });
+        $("#searchIcon").click(function() {
+            $(this).hasClass("close") && ($("#inputBuscar").val(""),
+            b.actualizarIconoBuscar(""),
+            b.buscarMenu(""))
+        });
+        $("#menuSegLink").keyup(function(a) {
+            13 != a.which && 32 != a.which || $(this).click()
+        }).focus(function() {
+            $(".subMenuSegAccesClick").removeClass("active selected")
+        });
+        $("#menuSegLink").parent().next().find("a").keyup(function(a) {
+            $(".menuSeg").hasClass("visible") && ($("#menuSegLink").click(),
+            $(this).focus())
+        });
+        $(".subMenuSegAccesClick").keyup(function(a) {
+            13 == a.which || 32 == a.which ? (a = $(this).attr("href"),
+            $("#ifrm1").attr("src", a),
+            d && setTimeout(function() {
+                $(".menuSeg").hasClass("visible") && ($("#menuSegLink").click(),
+                $(this).focus())
+            }, 500)) : 9 == a.which && ($(".subMenuSegAccesClick").removeClass("active selected"),
+            $(this).addClass("active selected"))
+        });
+        $("#linkLogo").click(function() {
+            $("#ifrm1").attr("src", "/ib_bcr/transacciones/productos/productos.asp ")
+        }).keyup(function(a) {
+            9 != a.which && a.preventDefault()
+        }).keydown(function(a) {
+            9 != a.which && a.preventDefault()
+        });
+        setTimeout(function() {
+            var a = document.getElementById("ifrm1").contentWindow;
+            a && a.document && a.document.body && (a.document.body.onmousedown = function() {
+                $(".menuSeg").hasClass("visible") && ($("#menuSegLink").click(),
+                $(this).focus())
+            }
+            ,
+            $("#ifrm1").on("load", function() {
+                document.getElementById("ifrm1").contentWindow.document.body.onmousedown = function() {
+                    $(".menuSeg").hasClass("visible") && ($("#menuSegLink").click(),
+                    $(this).focus())
+                }
+            }))
+        }, 300);
+        $(window).resize(function() {
+            990 < window.innerWidth && $(".pusher").click();
+            1199 < window.innerWidth ? $("#contentMenuMobile").addClass("oculto") : $("#contentMenuMobile").removeClass("oculto")
+        });
+        d && ($(".menuSeg").css("margin-top", "6px"),
+        $("#labelCerrarSession").click(function() {
+            var a = $(this).parent().prop("href");
+            window.location.href = a
+        }));
+        1199 > window.innerWidth && $("#contentMenuMobile").removeClass("oculto")
+    },
+    actualizarIconoBuscar: function(b) {
+        var c = $("#searchIcon");
+        "" == $.trim(b) ? (c.removeClass("close"),
+        c.addClass("search accesibilidadClick"),
+        c.attr("tabindex", -1),
+        c.attr("alt", ""),
+        $("#inputBuscar").focus()) : (c.removeClass("search"),
+        c.addClass("close accesibilidadClick"),
+        c.attr("tabindex", 10),
+        c.attr("title", this.etiquetas.limpiarTexto))
+    },
+    cargarModalContactenos: function() {
+        $("#modalContactenos").modal({
+            closable: !1,
+            centered: !1
+        }).modal("show")
+    },
+    cerrarModalContactenos: function() {
+        $("#modalContactenos").modal("hide")
+    },
+    cerrarModalGeneral: function() {
+        $("#modalGeneral").modal("hide");
+        setTimeout(function() {
+            $("#contenidoModal").children().remove()
+        }, 300)
+    },
+    abrirModalGeneral: function() {
+        $("#modalGeneral").modal("show")
+    },
+    procesarMenu: function(b) {
+        for (var c = [], d = [], a = 0; a < b.length; a++) {
+            var e = b[a]
+              , g = parseInt(e.Codigo_Padre);
+            1 == g ? (this.buscarHijos(b, e),
+            c.push(e)) : 200 == g && (this.buscarHijos(b, e),
+            d.push(e))
+        }
+        this.menuSuperior = c;
+        this.menuLateral = d
+    },
+    buscarHijos: function(b, c) {
+        var d = $.grep(b, function(g) {
+            return g.Codigo_Padre == c.Codigo
+        });
+        if (0 == d.length)
+            return c.submenu = null,
+            d;
+        for (var a = 0; a < d.length; a++) {
+            var e = d[a];
+            this.etiquetas.menupagoservicios != "menu-" + e.Texto && this.buscarHijos(b, e)
+        }
+        c.submenu = d
+    },
+    crearMenuLateral: function(b, c) {
+        var d = $("#menuLateral");
+        d.children().remove();
+        this.tabIndexMenuLateral = 11;
+        if (0 < b.length)
+            for (var a = 0; a < b.length; a++) {
+                var e = $('<div class="ui fitted divider"></div>')
+                  , g = $('<i class="dropdown icon"></i>')
+                  , f = b[a];
+                let idMenu =f.Texto.replace(/ |\(|\)/g,"_");
+                let k = $("<a></a>").attr("title", f.Texto).attr("alt", f.Texto).attr("target", f.Target)
+                .attr("tabindex", this.tabIndexMenuLateral).addClass("title item n1menu accesibilidadClick " + (c ? "expanded" : "")).text(f.Texto)
+                .text(f.Texto).click(
+                    function(){
+                        if (navigator.userAgent.indexOf("Firefox") > 0) {
+                            $(".accordion.n0menu."+idMenu).removeClass("hidden").addClass("visible");
+                        }
+                    }
+                );
+                this.tabIndexMenuLateral += 1;
+                if (f.submenu && 0 < f.submenu.length) {
+                    k.append(g);
+                    var l = this.crearSubMenu(f.submenu, 2, !0, c, idMenu)
+                }
+                d.append(e).append(k);
+                l && d.append(l)
+            }
+        else
+            a = $('<div class="ui "></div>').css({
+                "text-align": "center",
+                padding: "5px"
+            }),
+            e = $("<label></label>").attr("tabindex", 10).css("font-weight", "500").text(this.etiquetas.noResultados),
+            a.append(e),
+            d.append(a);
+        setTimeout(function() {
+            $(".accesibilidadClick").unbind("keyup").keyup(function(h) {
+                13 != h.which && 32 != h.which || $(this).click()
+            });
+            $(".accesibilidadRedir").unbind("click").click(function(h) {
+                $(".pusher").click();
+                $("#ifrm1").focus()
+            })
+        }, 300)
+    },
+    crearSubMenu: function(b, c, d, a, idMenu) {
+        for (var e = $('<div class="content n0menu">'), g = 0; g < b.length; g++) {
+            var f = b[g]
+              , k = $('<i class="dropdown icon"></i>')
+              , l = $('<div class="accordion n0menu transition hidden '+idMenu+'">');
+            let idSubMenu = f.Texto.replace(/ |\(|\)/g,"_"); 
+            let h = $("<a></a>").attr("title", f.Texto).attr("alt", f.Texto).attr("target", f.Target)
+            .attr("codigo", f.Codigo).attr("tabindex", this.tabIndexMenuLateral).addClass(f.submenu ? "title" : "subtitle")
+            .addClass("item n" + c + "menu accesibilidadClick " + (a ? "expanded" : "")).text(f.Texto)
+            .text(f.Texto).click(
+                function(){
+                    if (navigator.userAgent.indexOf("Firefox") > 0) {
+                        $(".accordion.n0menu."+idSubMenu).removeClass("hidden").addClass("visible");
+                    }
+                }
+            );
+            this.tabIndexMenuLateral += 1;
+            var m = null;
+            f.submenu && 0 < f.submenu.length && d ? (h.append(k),
+            m = this.crearSubMenu(f.submenu, c + 1, d, a,idSubMenu)) : (h.attr("href", f.Url),
+            h.addClass("accesibilidadRedir"));
+            l.append(h);
+            m && l.append(m);
+            e.append(l)
+        }
+        return e
+    },
+    buscarMenu: function(b) {
+        b = $.trim(b);
+        if ("" == b || 3 > b.length)
+            this.crearMenuLateral(this.menuLateral);
+        else {
+            for (var c = $.extend(!0, [], this.menuLateral), d = [], a = 0; a < c.length; a++) {
+                var e = c[a];
+                (e = this.buscar(e, b)) && e.submenu && 0 < e.submenu.length && d.push(e)
+            }
+            this.crearMenuLateral(d, !0);
+            $(".expanded").click()
+        }
+    },
+    buscar: function(b, c) {
+        if (b.submenu) {
+            for (var d = [], a = 0; a < b.submenu.length; a++)
+                (hijo = this.buscar(b.submenu[a], c)) && d.push(hijo);
+            if (0 <= this.limpiarTexto(b.Texto).indexOf(this.limpiarTexto(c)))
+                return b;
+            if (0 < d.length)
+                return b.submenu = d,
+                b
+        } else if (0 <= this.limpiarTexto(b.Texto).indexOf(this.limpiarTexto(c)))
+            return b
+    },
+    limpiarTexto: function(b) {
+        return b.replace(/\u00e1/g, "a").replace(/\u00e9/g, "e").replace(/\u00ed/g, "i").replace(/\u00f3/g, "o").replace(/\u00fa/g, "u").replace(/\u00c1/g, "A").replace(/\u00c9/g, "E").replace(/\u00cd/g, "I").replace(/\u00d3/g, "O").replace(/\u00da/g, "U").toLowerCase()
+    },
+    crearMenuSuperiorMovil: function() {
+        var b = $("#menuSuperiorMovil");
+        b.children().remove();
+        var c = this.menuSuperior;
+        this.tabIndexMenuLateral = 600;
+        for (var d = 0; d < c.length; d++) {
+            var a = c[d]
+              , e = $("<a></a>").attr("title", a.Texto).attr("alt", a.Texto).attr("target", a.Target).attr("tabindex", this.tabIndexMenuLateral).addClass("item")
+              , g = $("<img/>").attr("src", "/i-menu/" + a.Imagen).attr("tabindex", "-1").attr("alt", a.Texto)
+              , f = $("<label></label>").css("padding", "10px").attr("tabindex", "-1").text(a.Texto);
+            if (a.submenu) {
+                e.addClass("title accesibilidadClick");
+                var k = $('<div class="ui accordion submenuTitle"></div>');
+                submenu = this.crearSubMenu(a.submenu, 2, !1);
+                e.append(g).append(f);
+                k.append(e).append(submenu);
+                b.append(k)
+            } else
+                e.attr("href", a.Url),
+                e.addClass("accesibilidadRedir"),
+                e.append(g).append(f),
+                b.append(e)
+        }
+        setTimeout(function() {
+            $(".submenuTitle").removeClass("ui accordion");
+            b.append('<label tabIndex="650" class="cerrarMenuLabel"></label>');
+            $(".cerrarMenuLabel").keyup(function(l) {
+                $(".pusher").click();
+                $("#linkLogo").focus()
+            })
+        }, 100)
+    },
+    formatearFecha: function(b) {
+        if ("" !== b) {
+            var c = 1 < b.split("PM").length
+              , d = 1 < b.split("AM").length
+              , a = b.split("/");
+            b = b.split(" ")[1].split(":");
+            c || d ? (c = 2 > a[1].length ? "0" + a[1] : a[1],
+            d = 2 > a[0].length ? "0" + a[0] : a[0],
+            a = a[2].split(" ")[0]) : 4 == a[0].split(" ")[0].length ? (c = 2 > a[2].length ? "0" + a[2].split(" ")[0] : a[2].split(" ")[0],
+            d = 2 > a[1].length ? "0" + a[1] : a[1],
+            a = a[0].split(" ")[0]) : (c = 2 > a[0].length ? "0" + a[0].split(" ")[0] : a[0].split(" ")[0],
+            d = 2 > a[1].length ? "0" + a[1] : a[1],
+            a = a[2].split(" ")[0]);
+            var e = 2 > b[0].length ? "0" + b[0] : b[0]
+              , g = 2 > b[1].length ? "0" + b[1] : b[1];
+            b = b[2].split(" ")[0];
+            b = 2 > b.length ? "0" + b : b;
+            return c + "/" + d + "/" + a + " " + e + ":" + g + ":" + b + " "
+        }
+        return ""
+    }
+});
